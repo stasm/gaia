@@ -1253,6 +1253,7 @@
 
 
     if (isPretranslated) {
+      fireLocalizedEvent.call(navigator.mozL10n);
       waitFor('interactive', function() {
         window.setTimeout(initResources.bind(navigator.mozL10n));
       });
