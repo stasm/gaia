@@ -180,8 +180,7 @@ if (navigator.mozL10n.readyState == 'complete' ||
     navigator.mozL10n.readyState == 'interactive') {
   EmergencyCbManager.init();
 } else {
-  document.addEventListener('mozDOMLocalized', function startup(evt) {
-    document.removeEventListener('mozDOMLocalized', startup);
+  document.mozWait(function startup(evt) {
     EmergencyCbManager.init();
-  });
+  }, { languageChange: false });
 }

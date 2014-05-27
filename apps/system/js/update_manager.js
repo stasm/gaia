@@ -612,8 +612,6 @@ var UpdateManager = {
   }
 };
 
-document.addEventListener('mozDOMLocalized', function startup(evt) {
-  document.removeEventListener('mozDOMLocalized', startup);
-
+document.mozWait(function startup(evt) {
   UpdateManager.init();
-});
+}, { languageChange: false });

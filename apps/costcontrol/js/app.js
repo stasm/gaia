@@ -101,10 +101,9 @@ var CostControlApp = (function() {
     if (isApplicationLocalized) {
       realshowNonReadyScreen(cardState);
     } else {
-      document.addEventListener('mozDOMLocalized', function _onlocalized() {
-        document.removeEventListener('mozDOMLocalized', _onlocalized);
+      document.mozWait(function _onlocalized() {
         realshowNonReadyScreen(cardState);
-      });
+      }, { languageChange: false });
     }
 
     function realshowNonReadyScreen(messageId) {
@@ -225,7 +224,7 @@ var CostControlApp = (function() {
   }
 
   var isApplicationLocalized = false;
-  document.addEventListener('mozDOMLocalized', function _onLocalize() {
+  document.mozWait(function _onLocalize() {
     isApplicationLocalized = true;
     if (initialized) {
       updateUI();

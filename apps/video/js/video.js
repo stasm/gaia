@@ -117,7 +117,7 @@ document.addEventListener('visibilitychange', function visibilityChange() {
   }
 });
 
-document.addEventListener('mozDOMLocalized', function initLocale() {
+document.mozWait(function initLocale() {
   document.documentElement.lang = navigator.mozL10n.language.code;
   document.documentElement.dir = navigator.mozL10n.language.direction;
 });

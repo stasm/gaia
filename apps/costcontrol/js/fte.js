@@ -33,7 +33,7 @@
         data: ''
       }, Common.COST_CONTROL_APP);
 
-      document.addEventListener('mozDOMLocalized', _onLocalize);
+      document.mozWait(_onLocalize);
     });
   }
 

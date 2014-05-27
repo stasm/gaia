@@ -148,5 +148,5 @@ if (navigator.mozL10n.readyState == 'complete' ||
     navigator.mozL10n.readyState == 'interactive') {
   Payment.init();
 } else {
-  document.addEventListener('mozDOMLocalized', Payment.init.bind(Payment));
+  document.mozWait(Payment.init.bind(Payment));
 }

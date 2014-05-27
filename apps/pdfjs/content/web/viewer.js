@@ -5044,7 +5044,7 @@ function selectScaleOption(value) {
   return predefinedValueFound;
 }
 
-document.addEventListener('mozDOMLocalized', function localized(evt) {
+document.mozWait(function localized(evt) {
   document.getElementsByTagName('html')[0].dir = mozL10n.getDirection();
 
   PDFView.animationStartedPromise.then(function() {

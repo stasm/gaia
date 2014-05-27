@@ -185,7 +185,7 @@ Calendar.App = (function(window) {
      *
      */
     observeDateLocalization: function() {
-      document.addEventListener('mozDOMLocalized', DateL10n.localizeElements);
+      document.mozWait(DateL10n.localizeElements);
     },
 
     /**

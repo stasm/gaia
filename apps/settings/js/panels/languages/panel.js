@@ -13,10 +13,10 @@ define(function(require) {
         localizedEventListener = function() {
           languages.onLocalized(languages);
         };
-        document.addEventListener('mozDOMLocalized', localizedEventListener);
+        document.mozWait(localizedEventListener, { mozL10nReady: false });
       },
       onBeforeHide: function() {
-        document.removeEventListener('mozDOMLocalized', localizedEventListener);
+        navigator.mozL10n.removeEventListener('ready', localizedEventListener);
       },
       onInit: function(panel) {
         languages.onInit(panel);

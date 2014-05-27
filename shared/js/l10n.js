@@ -1169,6 +1169,15 @@
     once: function once(callback) {
       return navigator.mozL10n.ctx.once(callback);
     },
+    addEventListener: function(type, callback) {
+      return navigator.mozL10n.ctx.addEventListener(type, callback);
+    },
+    removeEventListener: function(type, callback) {
+      return navigator.mozL10n.ctx.removeEventListener(type, callback);
+    },
+    get isReady() {
+      return navigator.mozL10n.ctx.isReady;
+    },
     get readyState() {
       return navigator.mozL10n.ctx.isReady ? 'complete' : 'loading';
     },

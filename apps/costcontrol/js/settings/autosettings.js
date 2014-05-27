@@ -96,7 +96,7 @@ var AutoSettings = (function() {
       );
 
       // Keep the UI localized
-      document.addEventListener('mozDOMLocalized', function _onLocalized() {
+      document.mozWait(function _onLocalized() {
         var textSpan = dialog.querySelector('input:checked + span');
         var tagSpan = guiWidget.querySelector('.tag');
         tagSpan.textContent = textSpan.textContent;

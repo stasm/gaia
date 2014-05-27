@@ -3,7 +3,7 @@
 
 'use strict';
 
-document.addEventListener('mozDOMLocalized', function showPanel() {
+document.mozWait(function showPanel() {
   var _ = navigator.mozL10n.get;
   var settings = window.navigator.mozSettings;
   var bluetooth = window.navigator.mozBluetooth;

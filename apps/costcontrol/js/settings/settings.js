@@ -248,7 +248,7 @@ var Settings = (function() {
     };
   }
 
-  document.addEventListener('mozDOMLocalized', function _onLocalize() {
+  document.mozWait(function _onLocalize() {
     if (initialized) {
       updateUI();
     }

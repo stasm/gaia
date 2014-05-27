@@ -28,11 +28,10 @@ if (!contacts.MatchingController) {
      */
     var type = 'matching';
 
-    document.addEventListener('mozDOMLocalized', function localized(evt) {
-      document.removeEventListener('mozDOMLocalized', localized);
+    document.mozWait(function localized(evt) {
       // The controller is started when the literals are available
       start(window.location.search.substring('contactId'.length + 2));
-    });
+    }, { languageChange: false });
 
     function start(cid) {
       if (!cid) {

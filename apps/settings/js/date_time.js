@@ -251,7 +251,7 @@ navigator.mozL10n.once(function SettingsDateAndTime() {
     updateClock();
   });
 
-  document.addEventListener('mozDOMLocalized', function localized() {
+  document.mozWait(function localized() {
     // Update date and time locale when language is changed
     var d = new Date();
     var f = new navigator.mozL10n.DateTimeFormat();

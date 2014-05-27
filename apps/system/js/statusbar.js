@@ -1215,8 +1215,7 @@ if (navigator.mozL10n.readyState == 'complete' ||
     navigator.mozL10n.readyState == 'interactive') {
   StatusBar.init();
 } else {
-  document.addEventListener('mozDOMLocalized', function statusbar_init() {
-    document.removeEventListener('mozDOMLocalized', statusbar_init);
+  document.mozWait(function statusbar_init() {
     StatusBar.init();
-  });
+  }, { languageChange: false });
 }

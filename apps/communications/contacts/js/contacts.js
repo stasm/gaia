@@ -834,7 +834,6 @@ var Contacts = (function() {
   };
 
   var close = function close() {
-    document.removeEventListener('mozDOMLocalized', initContacts);
   };
 
   var initContacts = function initContacts(evt) {

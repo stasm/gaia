@@ -152,7 +152,6 @@ var DeviceStorageWatcher = {
   }
 };
 
-document.addEventListener('mozDOMLocalized', function startup(evt) {
-  document.removeEventListener('mozDOMLocalized', startup);
+document.mozWait(function startup(evt) {
   DeviceStorageWatcher.init();
-});
+}, { languageChange: false });

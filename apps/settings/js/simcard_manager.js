@@ -346,7 +346,7 @@
     },
     addLocalizedChangeEventOnIccs: function() {
       var conns = window.navigator.mozMobileConnections;
-      document.addEventListener('mozDOMLocalized', function() {
+      document.mozWait(function() {
         for (var i = 0; i < conns.length; i++) {
           var iccId = conns[i].iccId;
           this.updateCardStateWithUI(i, iccId);

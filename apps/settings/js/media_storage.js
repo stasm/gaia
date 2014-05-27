@@ -317,7 +317,7 @@ require([
       this.defaultMediaLocation.addEventListener('click', this);
       this.makeDefaultLocationMenu();
 
-      document.addEventListener('mozDOMLocalized', this);
+      document.mozWait(this);
 
       this.updateInfo();
     },
