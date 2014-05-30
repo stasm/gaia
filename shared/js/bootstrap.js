@@ -18,18 +18,37 @@
     }
 
     var wait = opts.languageChange ? every : once;
+    var destroy;
 
     if (opts.mozDOMLocalized && opts.mozL10nReady) {
-      wait(document, 'mozDOMLocalized', 'mozLocalized', function() {
+      var outer = function() {
         once(navigator.mozL10n, 'ready', 'isReady', callback);
-      });
+      };
+      wait(document, 'mozDOMLocalized', 'mozLocalized', outer);
+      destroy = function() {
+        navigator.mozL10n.removeEventListener('ready', callback);
+        document.removeEventListener('mozDOMLocalized', outer);
+        delete this.destroy;
+      };
     } else if (opts.mozDOMLocalized) {
       wait(document, 'mozDOMLocalized', 'mozLocalized', callback);
+      destroy = function() {
+        document.removeEventListener('mozDOMLocalized', callback);
+        delete this.destroy;
+      };
     } else if (opts.mozL10nReady) {
       wait(navigator.mozL10n, 'ready', 'isReady', callback);
+      destroy = function() {
+        navigator.mozL10n.removeEventListener('ready', callback);
+        delete this.destroy;
+      };
     } else {
       setTimeout(callback);
     }
+
+    return {
+      destroy: destroy
+    };
 
   };
 

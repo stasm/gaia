@@ -834,6 +834,7 @@ var Contacts = (function() {
   };
 
   var close = function close() {
+    mozWaitHandler.destroy();
   };
 
   var initContacts = function initContacts(evt) {
@@ -860,7 +861,10 @@ var Contacts = (function() {
     });
   };
 
-  navigator.mozL10n.once(initContacts);
+  var mozWaitHandler = document.mozWait(initContacts, {
+    mozDOMLocalized: false,
+    languageChange: false
+  });
 
   function loadConfirmDialog() {
     var args = Array.slice(arguments);

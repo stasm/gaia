@@ -62,14 +62,14 @@ function FormButton(input, config) {
   // Bind this.refresh so that the listener can be easily removed.
   this.refresh = this.refresh.bind(this);
   // Update the dropdown when the language changes.
-  document.mozWait(this.refresh);
+  this.mozWaitHandler = document.mozWait(this.refresh);
 }
 
 FormButton.prototype = {
 
   /** Remove all event handlers. */
   destroy: function() {
-    navigator.mozL10n.removeEventListener('ready', this.refresh);
+    this.mozWaitHandler.destroy();
   },
 
   /**

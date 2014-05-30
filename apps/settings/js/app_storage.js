@@ -7,6 +7,7 @@ var AppStorage = (function AppStorage() {
   var _appStorage = null;
   var _callback = null;
   var _debug = false;
+  var _mozWaitHandler;
 
   function debug(msg) {
     if (!_debug)
@@ -27,12 +28,12 @@ var AppStorage = (function AppStorage() {
 
   function attachListeners() {
     _appStorage.addEventListener('change', getSpaceInfo);
-    document.mozWait(getSpaceInfo, { mozL10nReady: false });
+    _mozWaitHandler = document.mozWait(getSpaceInfo, { mozL10nReady: false });
   }
 
   function detachListeners() {
     _appStorage.removeEventListener('change', getSpaceInfo);
-    navigator.mozL10n.removeEventListener('ready', getSpaceInfo);
+    _mozWaitHandler.destroy();
   }
 
 

@@ -7,16 +7,18 @@ define(function(require) {
   return function ctor_languages_panel() {
     var languages = Languages();
     var localizedEventListener;
+    var mozWaitHandler;
 
     return SettingsPanel({
       onBeforeShow: function() {
         localizedEventListener = function() {
           languages.onLocalized(languages);
         };
-        document.mozWait(localizedEventListener, { mozL10nReady: false });
+        mozWaitHandler = document.mozWait(localizedEventListener,
+                                        { mozL10nReady: false });
       },
       onBeforeHide: function() {
-        navigator.mozL10n.removeEventListener('ready', localizedEventListener);
+        mozWaitHandler.destroy();
       },
       onInit: function(panel) {
         languages.onInit(panel);
