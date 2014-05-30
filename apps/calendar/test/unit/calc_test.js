@@ -172,34 +172,33 @@ suite('calendar/calc', function() {
   });
 
   suite('handle localization events', function() {
-    var reaL10n;
+    var reaL10nGet;
     var weekStartsOnMonday = 0;
 
     suiteSetup(function() {
-      reaL10n = navigator.mozL10n;
-      navigator.mozL10n = {
-        get: function(name) {
-          if (name === 'weekStartsOnMonday') {
-            return weekStartsOnMonday;
-          }
-          return reaL10n.get.apply(this, arguments);
+      // XXX this should use MockL10n, bug 1004973
+      reaL10nGet = navigator.mozL10n.get;
+      navigator.mozL10n.get = function(name) {
+        if (name === 'weekStartsOnMonday') {
+          return weekStartsOnMonday;
         }
+        return reaL10nGet.apply(null, arguments);
       };
     });
 
     suiteTeardown(function() {
-      navigator.mozL10n = reaL10n;
+      navigator.mozL10n.get = reaL10nGet;
     });
 
     test('weekStartsOnMonday = 1', function() {
       weekStartsOnMonday = 1;
-      document.dispatchEvent(new Event('mozDOMLocalized'));
+      navigator.mozL10n.ctx._emitter.emit('ready');
       assert.ok(subject.startsOnMonday, 'week starts on monday');
     });
 
     test('weekStartsOnMonday = 0', function() {
       weekStartsOnMonday = 0;
-      document.dispatchEvent(new Event('mozDOMLocalized'));
+      navigator.mozL10n.ctx._emitter.emit('ready');
       assert.ok(!subject.startsOnMonday, 'week starts on sunday');
     });
   });

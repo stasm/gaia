@@ -293,23 +293,12 @@
   l10nLink('/locales/locales.ini');
   l10nLink('/shared/locales/date.ini');
 
-  requireApp('calendar/shared/js/l10n.js');
+  requireApp('calendar/shared/js/bootstrap.js');
   // setup localization....
   requireApp('calendar/shared/js/l10n.js', function() {
-    // Massive hack to trick l10n to load... (TODO: upstream a fix to l10n.js)
-    document.dispatchEvent(new Event('DOMContentLoaded'));
-
     suiteSetup(function(done) {
       Array.slice(document.querySelectorAll('link'));
-
-      var state = navigator.mozL10n.readyState;
-      if (state !== 'complete' && state !== 'interactive') {
-        document.mozWait(function() {
-          done();
-        });
-      } else {
-        done();
-      }
+      document.mozWait(done);
     });
   });
 
