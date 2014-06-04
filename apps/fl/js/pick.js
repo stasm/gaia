@@ -1,20 +1,22 @@
-// Wait until we're localized, and get an activity request
-navigator.mozL10n.once(function() {
-  navigator.mozSetMessageHandler('activity', function(activity) {
-    var type = activity.source.data.type;
-    if (type === 'ringtone' ||
-        (Array.isArray(type) && type.indexOf('ringtone') !== -1)) {
-      pickRingtone(activity);
-    }
-    else if (type === 'wallpaper' ||
-             (Array.isArray(type) && type.indexOf('wallpaper') !== -1)) {
-      pickWallpaper(activity);
-    }
-    else {
-      console.error('unexpected activity request',
-                    activity.source.name,
-                    JSON.stringify(activity.source.data));
-    }
+// Wait until we're loaded, localized, and get an activity request
+window.addEventListener('load', function() {
+  navigator.mozL10n.once(function() {
+    navigator.mozSetMessageHandler('activity', function(activity) {
+      var type = activity.source.data.type;
+      if (type === 'ringtone' ||
+          (Array.isArray(type) && type.indexOf('ringtone') !== -1)) {
+        pickRingtone(activity);
+      }
+      else if (type === 'wallpaper' ||
+               (Array.isArray(type) && type.indexOf('wallpaper') !== -1)) {
+        pickWallpaper(activity);
+      }
+      else {
+        console.error('unexpected activity request',
+                      activity.source.name,
+                      JSON.stringify(activity.source.data));
+      }
+    });
   });
 });
 
