@@ -541,6 +541,10 @@ $(STAGE_DIR):
 
 LANG=POSIX # Avoiding sort order differences between OSes
 
+.PHONY: bug1084502
+bug1084502:
+	@$(call run-js-command,bug1084502)
+
 .PHONY: app
 app: b2g_sdk profile-dir $(STAGE_DIR)
 	@$(call run-js-command,app)
