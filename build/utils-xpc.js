@@ -1039,8 +1039,12 @@ function killAppByPid(appName, gaiaDir) {
  * @return {DOM}
  */
 function getDocument(content) {
-  var DOMParser = CC('@mozilla.org/xmlextras/domparser;1', 'nsIDOMParser');
-  return (new DOMParser()).parseFromString(content, 'text/html');
+  var principal = Cc['@mozilla.org/scriptsecuritymanager;1']
+    .getService(Ci.nsIScriptSecurityManager)
+    .getSystemPrincipal();
+  var DOMParser = CC(
+    '@mozilla.org/xmlextras/domparser;1', 'nsIDOMParser', 'init');
+  return (new DOMParser(principal)).parseFromString(content, 'text/html');
 }
 
 /**
