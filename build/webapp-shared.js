@@ -268,6 +268,7 @@ WebappShared.prototype.pushFileByType = function(kind, path) {
       break;
     case 'js':
       if (this.used.js.indexOf(path) === -1) {
+        path = path.replace(/^l10n.js/, 'l20n.js');
         this.used.js.push(path);
         this.pushJS(path);
       }

@@ -72,6 +72,7 @@ HTMLOptimizer.prototype._optimize = function() {
 
   this.embedHtmlImports();
   this.optimizeDeviceTypeCSS();
+  this.replaceL10nJS();
 
   var jsAggregationBlacklist = this.optimizeConfig.JS_AGGREGATION_BLACKLIST;
   if (this.config.GAIA_OPTIMIZE === '1' &&
@@ -459,6 +460,17 @@ HTMLOptimizer.prototype.optimizeDeviceTypeCSS = function() {
     if (el.dataset.deviceType !== this.config.GAIA_DEVICE_TYPE) {
       el.parentNode.removeChild(el);
     }
+  }.bind(this));
+};
+
+/**
+ * Replaces runtime l10n.js with l20n.js
+ */
+HTMLOptimizer.prototype.replaceL10nJS = function() {
+  var doc = this.win.document;
+  let scripts = doc.querySelectorAll('script[src$="shared/js/l10n.js"]');
+  Array.prototype.forEach.call(scripts, function(el) {
+    el.src = el.src.replace('l10n.js', 'l20n.js');
   }.bind(this));
 };
 
