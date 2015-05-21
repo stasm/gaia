@@ -104,7 +104,7 @@
 	  document.addEventListener('additionallanguageschange', _changeLanguage$onlanguagechage$onadditionallanguageschange.onadditionallanguageschange.bind(this, appVersion, defaultLang, availableLangs));
 	}
 
-	whenInteractive(init.bind(navigator.mozL10n = _L10n.L10n));
+	whenInteractive(init.bind(window.L10n = _L10n.L10n));
 
 /***/ },
 /* 1 */
@@ -298,38 +298,14 @@
 	});
 	exports.initViews = initViews;
 
-	var _translateDocument$setL10nAttributes$getL10nAttributes = __webpack_require__(8);
+	var _translateDocument = __webpack_require__(8);
 
 	'use strict';
 
 	var L10n = {
-	  env: null,
 	  views: [],
-	  languages: null,
-
-	  setAttributes: _translateDocument$setL10nAttributes$getL10nAttributes.setL10nAttributes,
-	  getAttributes: _translateDocument$setL10nAttributes$getL10nAttributes.getL10nAttributes,
-
-	  // legacy compat
-	  readyState: 'complete',
-	  language: {
-	    code: 'en-US',
-	    direction: 'ltr'
-	  },
-	  qps: {},
-	  get: function get(id) {
-	    return id;
-	  },
-	  // XXX temporary
-	  _ready: new Promise(function (resolve) {
-	    window.addEventListener('l10nready', resolve);
-	  }),
-	  ready: function ready(callback) {
-	    return this._ready.then(callback);
-	  },
-	  once: function once(callback) {
-	    return this._ready.then(callback);
-	  }
+	  env: null,
+	  languages: null
 	};
 
 	exports.L10n = L10n;
@@ -337,27 +313,17 @@
 	function initViews(langs) {
 	  return Promise.all(this.views.map(function (view) {
 	    return initView(view, langs);
-	  })).then(onReady.bind(this))['catch'](console.error.bind.console);
+	  }));
 	}
 
 	function initView(view, langs) {
+	  var _this = this;
+
 	  dispatchEvent(view.doc, 'supportedlanguageschange', langs);
-	  return view.ctx.fetch(langs, 1);
-	}
-
-	function onReady() {
-	  // XXX temporary
-	  dispatchEvent(window, 'l10nready');
-
-	  function translate(view) {
-	    return _translateDocument$setL10nAttributes$getL10nAttributes.translateDocument.call(view, view.doc.documentElement).then(function () {
-	      return view.observer.start();
-	    });
-	  }
-
-	  Promise.all(this.views.map(function (view) {
-	    return translate(view);
-	  })).then(dispatchEvent.bind(this, window, 'localized'));
+	  return view.ctx.fetch(langs, 1).then(_translateDocument.translateDocument.bind(view, view.doc.documentElement, langs)).then(function () {
+	    dispatchEvent.bind(_this, view.doc, 'DOMLocalized', langs);
+	    view.observer.start();
+	  });
 	}
 
 	function dispatchEvent(root, name, langs) {
@@ -386,6 +352,8 @@
 
 	var _getResourceLinks = __webpack_require__(5);
 
+	var _setL10nAttributes$getL10nAttributes = __webpack_require__(8);
+
 	var _MozL10nMutationObserver = __webpack_require__(9);
 
 	var _MozL10nMutationObserver2 = _interopRequireWildcard(_MozL10nMutationObserver);
@@ -400,9 +368,16 @@
 	  this.observer = new _MozL10nMutationObserver2['default']();
 	}
 
+	View.prototype.formatValue = function (id, args) {
+	  return this.ctx.formatValue(this.service.languages, id, args);
+	};
+
 	View.prototype.formatEntity = function (id, args) {
 	  return this.ctx.formatEntity(this.service.languages, id, args);
 	};
+
+	View.prototype.setAttributes = _setL10nAttributes$getL10nAttributes.setL10nAttributes;
+	View.prototype.getAttributes = _setL10nAttributes$getL10nAttributes.getL10nAttributes;
 
 /***/ },
 /* 5 */
@@ -574,6 +549,10 @@
 	  return rtlList.indexOf(lang) >= 0 ? 'rtl' : 'ltr';
 	}
 
+	function getDirection(lang) {
+	  return rtlList.indexOf(lang) >= 0 ? 'rtl' : 'ltr';
+	}
+
 	function arrEqual(arr1, arr2) {
 	  return arr1.length === arr2.length && arr1.every(function (elem, i) {
 	    return elem === arr2[i];
@@ -669,10 +648,9 @@
 	  return nodes.concat.apply(nodes, element.querySelectorAll('*[data-l10n-id]'));
 	}
 
-	function translateDocument(doc) {
-	  // XXX remove the global
-	  document.documentElement.lang = navigator.mozL10n.language.code;
-	  document.documentElement.dir = navigator.mozL10n.language.direction;
+	function translateDocument(doc, langs) {
+	  doc.lang = langs[0].code;
+	  doc.dir = langs[0].dir;
 	  return translateFragment.call(this, doc);
 	}
 
@@ -1018,6 +996,10 @@
 
 	  // take the string value only
 	  return this._formatTuple.call(this, args, entity)[1];
+	};
+
+	Context.prototype.formatValue = function (langs, id, args) {
+	  return this.fetch(langs).then(this._fallback.bind(this, Context.prototype._formatValue, id, args));
 	};
 
 	Context.prototype._formatEntity = function (args, entity) {
