@@ -28,7 +28,7 @@
       }
 
       // Add the l10n JS files to the DOM and wait for them to load.
-      loader.load(['/shared/js/l20n.js'], function baseLoaded() {
+      loader.load(['/shared/js/l10n.js'], function baseLoaded() {
         this._baseLoaded = true;
         navigator.mozL10n.once(loadDateAndFinalize);
       }.bind(this));

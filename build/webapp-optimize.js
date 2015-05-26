@@ -49,8 +49,7 @@ HTMLOptimizer.prototype.process = function() {
   // If this HTML document uses l10n.js, pre-localize it --
   //   note: a document can use l10n.js by including either l10n.js or
   //   localization resource link elements (see /shared/js/lazy_l10n.js).
-  if ((!this.win.document.querySelector('script[src$="l10n.js"]') &&
-       !this.win.document.querySelector('link[rel="localization"]')) ||
+  if (!hasL10n(this.win.document) ||
       ignore[this.webapp.sourceDirectoryName]) {
     return;
   }
@@ -72,7 +71,6 @@ HTMLOptimizer.prototype._optimize = function() {
 
   this.embedHtmlImports();
   this.optimizeDeviceTypeCSS();
-  this.replaceL10nJS();
 
   var jsAggregationBlacklist = this.optimizeConfig.JS_AGGREGATION_BLACKLIST;
   if (this.config.GAIA_OPTIMIZE === '1' &&
@@ -464,17 +462,6 @@ HTMLOptimizer.prototype.optimizeDeviceTypeCSS = function() {
 };
 
 /**
- * Replaces runtime l10n.js with l20n.js
- */
-HTMLOptimizer.prototype.replaceL10nJS = function() {
-  var doc = this.win.document;
-  let scripts = doc.querySelectorAll('script[src$="shared/js/l10n.js"]');
-  Array.prototype.forEach.call(scripts, function(el) {
-    el.src = el.src.replace('l10n.js', 'l20n.js');
-  }.bind(this));
-};
-
-/**
  * Write the optimized result into html file.
  */
 HTMLOptimizer.prototype.serializeNewHTMLDocumentOutput = function() {
@@ -763,6 +750,12 @@ function getL10nJSONFileName(htmlFile, buildDirectoryFilePath) {
   var relativePath = utils.relativePath(buildDirectoryFilePath, htmlFile.path);
   var base = relativePath.replace('.html', '').replace(/\//g, '.');
   return base + '.{locale}.json';
+}
+
+function hasL10n(doc) {
+  return doc.querySelector('link[rel="localization"]') &&
+    (doc.querySelector('script[src$="l10n.js"]') ||
+     doc.querySelector('script[src$="l20n.js"]'));
 }
 
 exports.execute = execute;
