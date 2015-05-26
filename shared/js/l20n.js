@@ -62,9 +62,9 @@
 
 	var _getMeta2 = __webpack_require__(5);
 
-	var _changeLanguage$onlanguagechage$onadditionallanguageschange = __webpack_require__(6);
+	var _changeLanguage$onlanguagechage$onadditionallanguageschange$getAdditionalLanguages = __webpack_require__(6);
 
-	var additionalLangsAtLaunch = navigator.mozApps.getAdditionalLanguages();
+	var additionalLangsAtLaunch = _changeLanguage$onlanguagechage$onadditionallanguageschange$getAdditionalLanguages.getAdditionalLanguages();
 	var readyStates = {
 	  loading: 0,
 	  interactive: 1,
@@ -93,15 +93,17 @@
 	  var availableLangs = _getMeta.availableLangs;
 	  var appVersion = _getMeta.appVersion;
 
-	  this.env = new _Env2['default'](document.URL, _io2['default'].fetch.bind(_io2['default'], appVersion));
+	  this.env = new _Env2['default'](document.URL, defaultLang, _io2['default'].fetch.bind(_io2['default'], appVersion));
 	  this.views.push(document.l10n = new _View.View(this, document));
 
 	  this.languages = additionalLangsAtLaunch.then(function (additionalLangs) {
-	    return _changeLanguage$onlanguagechage$onadditionallanguageschange.changeLanguage.call(_this, appVersion, defaultLang, availableLangs, additionalLangs, [], navigator.languages);
-	  }, _changeLanguage$onlanguagechage$onadditionallanguageschange.changeLanguage.bind(this, appVersion, defaultLang, availableLangs, null, [], navigator.languages));
+	    return _changeLanguage$onlanguagechage$onadditionallanguageschange$getAdditionalLanguages.changeLanguage.call(_this, appVersion, defaultLang, availableLangs, additionalLangs, [], navigator.languages);
+	  }, _changeLanguage$onlanguagechage$onadditionallanguageschange$getAdditionalLanguages.changeLanguage.bind(this, appVersion, defaultLang, availableLangs, null, [], navigator.languages));
 
-	  window.addEventListener('languagechange', _changeLanguage$onlanguagechage$onadditionallanguageschange.onlanguagechage.bind(this, appVersion, defaultLang, availableLangs));
-	  document.addEventListener('additionallanguageschange', _changeLanguage$onlanguagechage$onadditionallanguageschange.onadditionallanguageschange.bind(this, appVersion, defaultLang, availableLangs));
+	  window.addEventListener('languagechange', _changeLanguage$onlanguagechage$onadditionallanguageschange$getAdditionalLanguages.onlanguagechage.bind(this, appVersion, defaultLang, availableLangs));
+	  document.addEventListener('additionallanguageschange', _changeLanguage$onlanguagechage$onadditionallanguageschange$getAdditionalLanguages.onadditionallanguageschange.bind(this, appVersion, defaultLang, availableLangs));
+
+	  _L10n.L10n.change = _changeLanguage$onlanguagechage$onadditionallanguageschange$getAdditionalLanguages.onlanguagechage.bind(this, appVersion, defaultLang, availableLangs);
 	}
 
 	whenInteractive(init.bind(window.L10n = _L10n.L10n));
@@ -119,18 +121,25 @@
 	});
 	exports['default'] = Env;
 
-	var _Context = __webpack_require__(11);
+	var _Context = __webpack_require__(12);
 
 	var _Context2 = _interopRequireWildcard(_Context);
 
-	var _Resolver = __webpack_require__(12);
+	var _Resolver = __webpack_require__(13);
 
 	var _Resolver2 = _interopRequireWildcard(_Resolver);
 
+	var _qps = __webpack_require__(7);
+
+	var _qps2 = _interopRequireWildcard(_qps);
+
+	var _walkContent = __webpack_require__(14);
+
 	'use strict';
 
-	function Env(id, fetch) {
+	function Env(id, defaultLang, fetch) {
 	  this.id = id;
+	  this.defaultLang = defaultLang;
 	  this.fetch = fetch;
 
 	  this._resMap = Object.create(null);
@@ -179,7 +188,9 @@
 	    return cache[res][code][src];
 	  }
 
-	  return cache[res][code][src] = this.fetch(src, res, code).then(function (ast) {
+	  var fetched = src === 'qps' ? this.fetch(res, { code: this.defaultLang, src: 'app' }) : this.fetch(res, lang);
+
+	  return cache[res][code][src] = fetched.then(function (ast) {
 	    return cache[res][code][src] = createEntries(lang, ast);
 	  }, function (err) {
 	    return cache[res][code][src] = err;
@@ -188,10 +199,17 @@
 
 	function createEntries(lang, ast) {
 	  var entries = Object.create(null);
+	  var createEntry = lang.src === 'qps' ? createPseudoEntry : _Resolver2['default'].createEntry;
+
 	  for (var i = 0, node; node = ast[i]; i++) {
-	    entries[node.$i] = _Resolver2['default'].createEntry(node, lang);
+	    entries[node.$i] = createEntry(node, lang.code);
 	  }
+
 	  return entries;
+	}
+
+	function createPseudoEntry(node, code) {
+	  return _Resolver2['default'].createEntry(_walkContent.walkContent(node, _qps2['default'][code].translate), code);
 	}
 	module.exports = exports['default'];
 
@@ -207,9 +225,9 @@
 	  value: true
 	});
 
-	var _L10nError = __webpack_require__(7);
+	var _L10nError = __webpack_require__(8);
 
-	var _PropertiesParser = __webpack_require__(13);
+	var _PropertiesParser = __webpack_require__(15);
 
 	var _PropertiesParser2 = _interopRequireWildcard(_PropertiesParser);
 
@@ -255,13 +273,13 @@
 	}
 
 	var io = {
-	  extra: function extra(lang, ver, path, type) {
+	  extra: function extra(code, ver, path, type) {
 	    if (type === 'properties') {
 	      type = 'text';
 	    }
-	    return navigator.mozApps.getLocalizationResource(lang, ver, path, type);
+	    return navigator.mozApps.getLocalizationResource(code, ver, path, type);
 	  },
-	  app: function app(lang, ver, path, type) {
+	  app: function app(code, ver, path, type) {
 	    switch (type) {
 	      case 'properties':
 	        return load('text/plain', path);
@@ -278,10 +296,10 @@
 	};
 
 	exports['default'] = {
-	  fetch: function fetch(ver, source, res, lang) {
-	    var url = res.replace('{locale}', lang);
+	  fetch: function fetch(ver, res, lang) {
+	    var url = res.replace('{locale}', lang.code);
 	    var type = res.substr(res.lastIndexOf('.') + 1);
-	    var raw = io[source](lang, ver, url, type);
+	    var raw = io[lang.src](lang.code, ver, url, type);
 	    return parsers[type] ? raw.then(parsers[type]) : raw;
 	  }
 	};
@@ -298,7 +316,7 @@
 	});
 	exports.initViews = initViews;
 
-	var _translateDocument = __webpack_require__(8);
+	var _translateDocument = __webpack_require__(9);
 
 	'use strict';
 
@@ -352,9 +370,9 @@
 
 	var _getResourceLinks = __webpack_require__(5);
 
-	var _setL10nAttributes$getL10nAttributes = __webpack_require__(8);
+	var _setL10nAttributes$getL10nAttributes = __webpack_require__(9);
 
-	var _MozL10nMutationObserver = __webpack_require__(9);
+	var _MozL10nMutationObserver = __webpack_require__(10);
 
 	var _MozL10nMutationObserver2 = _interopRequireWildcard(_MozL10nMutationObserver);
 
@@ -492,49 +510,66 @@
 
 	'use strict';
 
+	var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
+
 	var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
 
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
+	exports.getAdditionalLanguages = getAdditionalLanguages;
 	exports.onlanguagechage = onlanguagechage;
 	exports.onadditionallanguageschange = onadditionallanguageschange;
 	exports.changeLanguage = changeLanguage;
 
-	var _prioritizeLocales = __webpack_require__(10);
+	var _prioritizeLocales = __webpack_require__(11);
 
 	var _initViews = __webpack_require__(3);
+
+	var _qps = __webpack_require__(7);
+
+	var _qps2 = _interopRequireWildcard(_qps);
 
 	'use strict';
 
 	var rtlList = ['ar', 'he', 'fa', 'ps', 'qps-plocm', 'ur'];
 
-	function onlanguagechage(appVersion, defaultLang, availableLangs) {
+	function getAdditionalLanguages() {
+	  if (navigator.mozApps && navigator.mozApps.getAdditionalLanguages) {
+	    return navigator.mozApps.getAdditionalLanguages()['catch'](function () {
+	      return [];
+	    });
+	  }
+
+	  return Promise.resolve([]);
+	}
+
+	function onlanguagechage(appVersion, defaultLang, availableLangs, requestedLangs) {
 	  var _this = this;
 
-	  this.languages = Promise.all([navigator.mozApps.getAdditionalLanguages(), this.languages]).then(function (all) {
-	    return changeLanguage.call.apply(changeLanguage, [_this, appVersion, defaultLang, availableLangs].concat(_toConsumableArray(all), [navigator.languages]));
+	  return this.languages = Promise.all([getAdditionalLanguages(), this.languages]).then(function (all) {
+	    return changeLanguage.call.apply(changeLanguage, [_this, appVersion, defaultLang, availableLangs].concat(_toConsumableArray(all), [requestedLangs || navigator.languages]));
 	  });
 	}
 
 	function onadditionallanguageschange(appVersion, defaultLang, availableLangs, evt) {
 	  var _this2 = this;
 
-	  this.languages = this.languages.then(function (prevLangs) {
+	  return this.languages = this.languages.then(function (prevLangs) {
 	    return changeLanguage.call(_this2, appVersion, defaultLang, availableLangs, evt.detail, prevLangs, navigator.languages);
 	  });
 	}
 
 	function changeLanguage(appVersion, defaultLang, availableLangs, additionalLangs, prevLangs, requestedLangs) {
 
-	  var allAvailableLangs = Object.keys(availableLangs).concat(additionalLangs || []);
+	  var allAvailableLangs = Object.keys(availableLangs).concat(additionalLangs || []).concat(Object.keys(_qps2['default']));
 	  var newLangs = _prioritizeLocales.prioritizeLocales(defaultLang, allAvailableLangs, requestedLangs);
 
-	  var langs = newLangs.map(function (lang) {
+	  var langs = newLangs.map(function (code) {
 	    return {
-	      code: lang,
-	      src: getLangSource(appVersion, availableLangs, additionalLangs, lang),
-	      dir: getDirection(lang)
+	      code: code,
+	      src: getLangSource(appVersion, availableLangs, additionalLangs, code),
+	      dir: getDirection(code)
 	    };
 	  });
 
@@ -545,12 +580,8 @@
 	  return langs;
 	}
 
-	function getDirection(lang) {
-	  return rtlList.indexOf(lang) >= 0 ? 'rtl' : 'ltr';
-	}
-
-	function getDirection(lang) {
-	  return rtlList.indexOf(lang) >= 0 ? 'rtl' : 'ltr';
+	function getDirection(code) {
+	  return rtlList.indexOf(code) >= 0 ? 'rtl' : 'ltr';
 	}
 
 	function arrEqual(arr1, arr2) {
@@ -568,12 +599,16 @@
 	  return null;
 	}
 
-	function getLangSource(appVersion, availableLangs, additionalLangs, lang) {
-	  if (additionalLangs && additionalLangs[lang]) {
-	    var lp = getMatchingLangpack(appVersion, additionalLangs[lang]);
-	    if (lp && (!(lang in availableLangs) || parseInt(lp.revision) > availableLangs[lang])) {
+	function getLangSource(appVersion, availableLangs, additionalLangs, code) {
+	  if (additionalLangs && additionalLangs[code]) {
+	    var lp = getMatchingLangpack(appVersion, additionalLangs[code]);
+	    if (lp && (!(code in availableLangs) || parseInt(lp.revision) > availableLangs[code])) {
 	      return 'extra';
 	    }
+	  }
+
+	  if (code in _qps2['default'] && !(code in availableLangs)) {
+	    return 'qps';
 	  }
 
 	  return 'app';
@@ -581,6 +616,118 @@
 
 /***/ },
 /* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	'use strict';
+
+	/* Pseudolocalizations
+	 *
+	 * PSEUDO is a dict of strategies to be used to modify the English
+	 * context in order to create pseudolocalizations.  These can be used by
+	 * developers to test the localizability of their code without having to
+	 * actually speak a foreign language.
+	 *
+	 * Currently, the following pseudolocales are supported:
+	 *
+	 *   qps-ploc - Ȧȧƈƈḗḗƞŧḗḗḓ Ḗḗƞɠŀīīşħ
+	 *
+	 *     In Accented English all English letters are replaced by accented
+	 *     Unicode counterparts which don't impair the readability of the content.
+	 *     This allows developers to quickly test if any given string is being
+	 *     correctly displayed in its 'translated' form.  Additionally, simple
+	 *     heuristics are used to make certain words longer to better simulate the
+	 *     experience of international users.
+	 *
+	 *   qps-plocm - ɥsıʅƃuƎ pǝɹoɹɹıW
+	 *
+	 *     Mirrored English is a fake RTL locale.  All words are surrounded by
+	 *     Unicode formatting marks forcing the RTL directionality of characters.
+	 *     In addition, to make the reversed text easier to read, individual
+	 *     letters are flipped.
+	 *
+	 *     Note: The name above is hardcoded to be RTL in case code editors have
+	 *     trouble with the RLO and PDF Unicode marks.  In reality, it should be
+	 *     surrounded by those marks as well.
+	 *
+	 * See https://bugzil.la/900182 for more information.
+	 *
+	 */
+
+	var reAlphas = /[a-zA-Z]/g;
+	var reVowels = /[aeiouAEIOU]/g;
+
+	// ȦƁƇḒḖƑƓĦĪĴĶĿḾȠǾƤɊŘŞŦŬṼẆẊẎẐ + [\\]^_` + ȧƀƈḓḗƒɠħīĵķŀḿƞǿƥɋřşŧŭṽẇẋẏẑ
+	var ACCENTED_MAP = 'ȦƁƇḒḖƑƓĦĪ' + 'ĴĶĿḾȠǾƤɊŘ' + 'ŞŦŬṼẆẊẎẐ' + '[\\]^_`' + 'ȧƀƈḓḗƒɠħī' + 'ĵķŀḿƞǿƥɋř' + 'şŧŭṽẇẋẏẑ';
+
+	// XXX Until https://bugzil.la/1007340 is fixed, ᗡℲ⅁⅂⅄ don't render correctly
+	// on the devices.  For now, use the following replacements: pɟפ˥ʎ
+	// ∀ԐↃpƎɟפHIſӼ˥WNOԀÒᴚS⊥∩ɅＭXʎZ + [\\]ᵥ_, + ɐqɔpǝɟƃɥıɾʞʅɯuodbɹsʇnʌʍxʎz
+	var FLIPPED_MAP = '∀ԐↃpƎɟפHIſ' + 'Ӽ˥WNOԀÒᴚS⊥∩Ʌ' + 'ＭXʎZ' + '[\\]ᵥ_,' + 'ɐqɔpǝɟƃɥıɾ' + 'ʞʅɯuodbɹsʇnʌʍxʎz';
+
+	function makeLonger(val) {
+	  return val.replace(reVowels, function (match) {
+	    return match + match.toLowerCase();
+	  });
+	}
+
+	function replaceChars(map, val) {
+	  // Replace each Latin letter with a Unicode character from map
+	  return val.replace(reAlphas, function (match) {
+	    return map.charAt(match.charCodeAt(0) - 65);
+	  });
+	}
+
+	var reWords = /[^\W0-9_]+/g;
+
+	function makeRTL(val) {
+	  // Surround each word with Unicode formatting codes, RLO and PDF:
+	  //   U+202E:   RIGHT-TO-LEFT OVERRIDE (RLO)
+	  //   U+202C:   POP DIRECTIONAL FORMATTING (PDF)
+	  // See http://www.w3.org/International/questions/qa-bidi-controls
+	  return val.replace(reWords, function (match) {
+	    return '‮' + match + '‬';
+	  });
+	}
+
+	// strftime tokens (%a, %Eb), template {vars}, HTML entities (&#x202a;)
+	// and HTML tags.
+	var reExcluded = /(%[EO]?\w|\{\s*.+?\s*\}|&[#\w]+;|<\s*.+?\s*>)/;
+
+	function mapContent(fn, val) {
+	  if (!val) {
+	    return val;
+	  }
+	  var parts = val.split(reExcluded);
+	  var modified = parts.map(function (part) {
+	    if (reExcluded.test(part)) {
+	      return part;
+	    }
+	    return fn(part);
+	  });
+	  return modified.join('');
+	}
+
+	function Pseudo(id, name, charMap, modFn) {
+	  this.id = id;
+	  this.translate = mapContent.bind(null, function (val) {
+	    return replaceChars(charMap, modFn(val));
+	  });
+	  this.name = this.translate(name);
+	}
+
+	exports['default'] = {
+	  'qps-ploc': new Pseudo('qps-ploc', 'Runtime Accented', ACCENTED_MAP, makeLonger),
+	  'qps-plocm': new Pseudo('qps-plocm', 'Runtime Mirrored', FLIPPED_MAP, makeRTL)
+	};
+	module.exports = exports['default'];
+
+/***/ },
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -602,7 +749,7 @@
 	L10nError.prototype.constructor = L10nError;
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -618,7 +765,7 @@
 	exports.translateFragment = translateFragment;
 	exports.translateElement = translateElement;
 
-	var _allowed = __webpack_require__(15);
+	var _allowed = __webpack_require__(17);
 
 	var _allowed2 = _interopRequireWildcard(_allowed);
 
@@ -843,7 +990,7 @@
 	}
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -853,7 +1000,7 @@
 	});
 	exports['default'] = MozL10nMutationObserver;
 
-	var _translateFragment$translateElement = __webpack_require__(8);
+	var _translateFragment$translateElement = __webpack_require__(9);
 
 	'use strict';
 
@@ -916,7 +1063,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -945,7 +1092,7 @@
 	}
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -959,13 +1106,13 @@
 	});
 	exports['default'] = Context;
 
-	var _L10nError = __webpack_require__(7);
+	var _L10nError = __webpack_require__(8);
 
-	var _Resolver = __webpack_require__(12);
+	var _Resolver = __webpack_require__(13);
 
 	var _Resolver2 = _interopRequireWildcard(_Resolver);
 
-	var _getPluralRule = __webpack_require__(16);
+	var _getPluralRule = __webpack_require__(18);
 
 	var _getPluralRule2 = _interopRequireWildcard(_getPluralRule);
 
@@ -1106,7 +1253,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1115,13 +1262,12 @@
 	  value: true
 	});
 
-	var _L10nError = __webpack_require__(7);
+	var _L10nError = __webpack_require__(8);
 
 	'use strict';
 
 	var KNOWN_MACROS = ['plural'];
 	var MAX_PLACEABLE_LENGTH = 2500;
-	var rePlaceables = /\{\{\s*(.+?)\s*\}\}/g;
 
 	function createEntry(node, lang) {
 	  var keys = Object.keys(node);
@@ -1353,11 +1499,11 @@
 	  }
 	}
 
-	exports['default'] = { createEntry: createEntry, format: format, rePlaceables: rePlaceables };
+	exports['default'] = { createEntry: createEntry, format: format };
 	module.exports = exports['default'];
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1366,9 +1512,47 @@
 	  value: true
 	});
 
-	var _L10nError = __webpack_require__(7);
+	/* Utility functions */
 
-	var _unescape = __webpack_require__(14);
+	// Recursively walk an AST node searching for content leaves
+	exports.walkContent = walkContent;
+	'use strict';
+	function walkContent(node, fn) {
+	  if (typeof node === 'string') {
+	    return fn(node);
+	  }
+
+	  if (node.t === 'idOrVar') {
+	    return node;
+	  }
+
+	  var rv = Array.isArray(node) ? [] : {};
+	  var keys = Object.keys(node);
+
+	  for (var i = 0, key; key = keys[i]; i++) {
+	    // don't change identifier ($i) nor indices ($x)
+	    if (key === '$i' || key === '$x') {
+	      rv[key] = node[key];
+	    } else {
+	      rv[key] = walkContent(node[key], fn);
+	    }
+	  }
+	  return rv;
+	}
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+
+	var _L10nError = __webpack_require__(8);
+
+	var _unescape = __webpack_require__(16);
 
 	'use strict';
 
@@ -1570,13 +1754,13 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 14 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = window;
 
 /***/ },
-/* 15 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1607,7 +1791,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
